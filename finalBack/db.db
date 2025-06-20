@@ -1,0 +1,144 @@
+-- Users table
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255),
+    avatar VARCHAR(255),
+    role VARCHAR(50) NOT NULL CHECK (role IN ('student', 'instructor', 'admin')),
+    oauth_provider VARCHAR(50),
+    oauth_id VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL;
+    last_login TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE
+);
+-- Categories table
+CREATE TABLE categories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+-- Courses table
+CREATE TABLE courses (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    instructor_id INTEGER REFERENCES users(id) NOT NULL,
+    category_id INTEGER REFERENCES categories(id),
+    thumbnail_url VARCHAR(255),
+    duration INTEGER DEFAULT 0,
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    feedback TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+-- Enrollments table
+CREATE TABLE enrollments (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) NOT NULL,
+    course_id INTEGER REFERENCES courses(id) NOT NULL,
+    enrolled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMP,
+    progress INTEGER DEFAULT 0,
+    UNIQUE(user_id, course_id)
+);
+-- Modules table
+CREATE TABLE modules (
+    id SERIAL PRIMARY KEY,
+    course_id INTEGER REFERENCES courses(id) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    "order" INTEGER NOT NULL,
+    duration INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+-- Lessons table
+CREATE TABLE lessons (
+    id SERIAL PRIMARY KEY,
+    module_id INTEGER REFERENCES modules(id) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    content_type VARCHAR(50) NOT NULL CHECK (content_type IN ('video', 'quiz', 'text')),
+    content_url VARCHAR(255),
+    duration INTEGER DEFAULT 0,
+    "order" INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+ 
+CREATE TABLE lesson_completions (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) NOT NULL,
+    lesson_id INTEGER REFERENCES lessons(id) NOT NULL,
+    completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, lesson_id) -- Prevent duplicate completions
+);
+-- Quizzes table
+CREATE TABLE quizzes (
+    id SERIAL PRIMARY KEY,
+    lesson_id INTEGER REFERENCES lessons(id) NOT NULL,
+    max_score INTEGER DEFAULT 10,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+ 
+ALTER TABLE quizzes
+ADD COLUMN title VARCHAR(255) NOT NULL DEFAULT 'Untitled Quiz';
+CREATE INDEX idx_quizzes_title ON quizzes(title);
+ 
+-- Questions table (separated from quizzes)
+CREATE TABLE questions (
+    id SERIAL PRIMARY KEY,
+    quiz_id INTEGER REFERENCES quizzes(id) NOT NULL,
+    question TEXT NOT NULL,
+    options JSONB NOT NULL,
+    correct_answer VARCHAR(255) NOT NULL,
+    score INTEGER DEFAULT 1,
+    "order" INTEGER DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+-- Assignments table
+CREATE TABLE assignments (
+    id SERIAL PRIMARY KEY,
+    lesson_id INTEGER REFERENCES lessons(id) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    max_score INTEGER DEFAULT 100,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+-- Submissions table
+CREATE TABLE submissions (
+    id SERIAL PRIMARY KEY,
+    assignment_id INTEGER REFERENCES assignments(id) NOT NULL,
+    user_id INTEGER REFERENCES users(id) NOT NULL,
+    submission_url VARCHAR(255) NOT NULL,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    grade INTEGER,
+    feedback TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+-- Indexes for performance
+CREATE INDEX idx_courses_instructor ON courses(instructor_id);
+CREATE INDEX idx_enrollments_user ON enrollments(user_id);
+CREATE INDEX idx_enrollments_course ON enrollments(course_id);
+CREATE INDEX idx_modules_course ON modules(course_id);
+CREATE INDEX idx_lessons_module ON lessons(module_id);
+CREATE INDEX idx_quizzes_lesson ON quizzes(lesson_id);
+CREATE INDEX idx_assignments_lesson ON assignments(lesson_id);
+CREATE INDEX idx_submissions_assignment ON submissions(assignment_id);
+CREATE INDEX idx_submissions_user ON submissions(user_id);
+CREATE INDEX idx_questions_quiz ON questions(quiz_id);
+Create Table attachments (
+id SERIAL PRIMARY KEY,
+original_name VARCHAR(100) NOT NULL,
+size INTEGER NOT NULL,
+public_id VARCHAR(255) NOT NULL,
+secure_url TEXT NOT NULL,
+format VARCHAR(50),
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);ALTER TABLE attachments ADD COLUMN mime_type VARCHAR(100) NOT NULL;
