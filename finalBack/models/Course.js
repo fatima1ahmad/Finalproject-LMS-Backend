@@ -156,14 +156,6 @@ const CourseModel = {
     }
   },
 
-  // async delete(id) {
-  //   try {
-  //     await pool.query("DELETE FROM courses WHERE id = $1", [id]);
-  //     return true;
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // },
   async delete(id) {
     const client = await pool.connect();
     try {
