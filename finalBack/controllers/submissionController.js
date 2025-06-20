@@ -10,38 +10,6 @@ import CourseModel from "../models/Course.js";
 const upload = multer();
 
 const SubmissionController = {
-  // async submitAssignment(req, res, next) {
-  //   try {
-  //     const { assignment_id, submission_url } = req.body;
-
-  //     // Verify assignment exists
-  //     const assignment = await AssignmentModel.findById(assignment_id);
-  //     if (!assignment) {
-  //       return res.status(404).json({
-  //         success: false,
-  //         message: "Assignment not found",
-  //       });
-  //     }
-
-  //     // Check if student is enrolled in the course
-  //     const lesson = await LessonModel.findById(assignment.lesson_id);
-  //     const module = await ModuleModel.findById(lesson.module_id);
-  //     //to check if the user is enrolled in the course from the enrollment model
-  //     const course = await CourseModel.findById(module.course_id);
-  //     const submission = await SubmissionModel.create({
-  //       assignment_id,
-  //       user_id: req.user.id,
-  //       submission_url,
-  //     });
-
-  //     res.status(201).json({
-  //       success: true,
-  //       submission,
-  //     });
-  //   } catch (error) {
-  //     next(error);
-  //   }
-  // },
   submitAssignment: [
     upload.single("file"), // الملف رح يكون في الحقل "file"
     async (req, res, next) => {
