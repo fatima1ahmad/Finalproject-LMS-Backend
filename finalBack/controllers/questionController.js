@@ -11,9 +11,11 @@ export default {
   createQuestion: [
     authenticateJWT,
     authorize(["instructor", "admin"]),
+
     async (req, res) => {
       try {
         const { quiz_id } = req.params;
+        console.log("✅ وصلني POST لإضافة سؤال لكويز:", req.params.quiz_id);
 
         // Validate request body
         const { error, value } = questionCreateSchema.validate({

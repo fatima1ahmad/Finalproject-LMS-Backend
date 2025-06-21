@@ -9,58 +9,6 @@ import {
 import { uploadToCloudinary } from "../config/cloudinary.js";
 
 const LessonController = {
-  // async createLesson(req, res, next) {
-  //   try {
-  //     const { error, value } = createLessonSchema.validate(req.body);
-  //     if (error) {
-  //       return res
-  //         .status(400)
-  //         .json({ success: false, message: error.details[0].message });
-  //     }
-
-  //     const { module_id, title, content_type, duration, order } = value;
-  //     let { content_url } = value;
-  //     if (content_type === "video" && req.file) {
-  //       const result = await uploadToCloudinary(req.file.buffer, {
-  //         resource_type: "video",
-  //       });
-  //       content_url = result.secure_url;
-  //     }
-
-  //     const module = await ModuleModel.findById(module_id);
-  //     if (!module) {
-  //       return res.status(404).json({
-  //         success: false,
-  //         message: "Module not found",
-  //       });
-  //     }
-
-  //     const course = await CourseModel.findById(module.course_id);
-
-  //     if (req.user.id !== course.instructor_id) {
-  //       return res.status(403).json({
-  //         success: false,
-  //         message: "Only the instructor of this course can create lessons",
-  //       });
-  //     }
-
-  //     const lesson = await LessonModel.create({
-  //       module_id,
-  //       title,
-  //       content_type,
-  //       content_url,
-  //       duration,
-  //       order,
-  //     });
-
-  //     res.status(201).json({
-  //       success: true,
-  //       lesson,
-  //     });
-  //   } catch (error) {
-  //     next(error);
-  //   }
-  // },
   async createLesson(req, res, next) {
     try {
       // طباعة القيم الواردة للديباغ
