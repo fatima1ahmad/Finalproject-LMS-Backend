@@ -11,63 +11,111 @@ const upload = multer();
 
 const SubmissionController = {
   submitAssignment: [
-    upload.single("file"), // الملف رح يكون في الحقل "file"
+    upload.single("file"),
     async (req, res, next) => {
       try {
         const { assignment_id } = req.body;
-        if (!assignment_id) {
-          return res
-            .status(400)
-            .json({ success: false, message: "assignment_id is required" });
-        }
 
-        // تحقق من وجود الواجب
-        const assignment = await AssignmentModel.findById(assignment_id);
-        if (!assignment) {
-          return res
-            .status(404)
-            .json({ success: false, message: "Assignment not found" });
-        }
+        // ... التحقق من وجود الواجب
 
-        // تحقق من إرسال ملف
         if (!req.file) {
-          return res
-            .status(400)
-            .json({ success: false, message: "File is required" });
+          return res.status(400).json({
+            success: false,
+            message: "File is required",
+          });
         }
 
-        // رفع الملف إلى Cloudinary مع resource_type:auto ليقبل أي نوع ملف
+        // رفع الملف إلى Cloudinary
         const result = await uploadToCloudinary(req.file.buffer, {
           resource_type: "auto",
         });
 
-        if (!result.secure_url) {
-          return res
-            .status(500)
-            .json({ success: false, message: "Error uploading file to cloud" });
-        }
+        // إنشاء سجل المرفق في قاعدة البيانات
+        const attachment = await AttachmentModel.createAttachment(
+          req.file.originalname,
+          req.file.mimetype,
+          req.file.size,
+          result.public_id,
+          result.secure_url,
+          result.format
+        );
 
-        // تحقق من تسجيل الطالب في الكورس (اختياري - حسب منطقك)
-        const lesson = await LessonModel.findById(assignment.lesson_id);
-        const module = await ModuleModel.findById(lesson.module_id);
-        const course = await CourseModel.findById(module.course_id);
-
-        // إنشاء السوبميشن مع رابط الملف المرفوع
+        // إنشاء التسليم مع ربطه بالمرفق
         const submission = await SubmissionModel.create({
           assignment_id,
           user_id: req.user.id,
           submission_url: result.secure_url,
+          attachment_id: attachment.id, // ربط المرفق بالتسليم
         });
 
         res.status(201).json({
           success: true,
           submission,
+          attachment,
         });
       } catch (error) {
         next(error);
       }
     },
   ],
+  // submitAssignment: [
+  //   upload.single("file"), // الملف رح يكون في الحقل "file"
+  //   async (req, res, next) => {
+  //     try {
+  //       const { assignment_id } = req.body;
+  //       if (!assignment_id) {
+  //         return res
+  //           .status(400)
+  //           .json({ success: false, message: "assignment_id is required" });
+  //       }
+
+  //       // تحقق من وجود الواجب
+  //       const assignment = await AssignmentModel.findById(assignment_id);
+  //       if (!assignment) {
+  //         return res
+  //           .status(404)
+  //           .json({ success: false, message: "Assignment not found" });
+  //       }
+
+  //       // تحقق من إرسال ملف
+  //       if (!req.file) {
+  //         return res
+  //           .status(400)
+  //           .json({ success: false, message: "File is required" });
+  //       }
+
+  //       // رفع الملف إلى Cloudinary مع resource_type:auto ليقبل أي نوع ملف
+  //       const result = await uploadToCloudinary(req.file.buffer, {
+  //         resource_type: "auto",
+  //       });
+
+  //       if (!result.secure_url) {
+  //         return res
+  //           .status(500)
+  //           .json({ success: false, message: "Error uploading file to cloud" });
+  //       }
+
+  //       // تحقق من تسجيل الطالب في الكورس (اختياري - حسب منطقك)
+  //       const lesson = await LessonModel.findById(assignment.lesson_id);
+  //       const module = await ModuleModel.findById(lesson.module_id);
+  //       const course = await CourseModel.findById(module.course_id);
+
+  //       // إنشاء السوبميشن مع رابط الملف المرفوع
+  //       const submission = await SubmissionModel.create({
+  //         assignment_id,
+  //         user_id: req.user.id,
+  //         submission_url: result.secure_url,
+  //       });
+
+  //       res.status(201).json({
+  //         success: true,
+  //         submission,
+  //       });
+  //     } catch (error) {
+  //       next(error);
+  //     }
+  //   },
+  // ],
 
   async getSubmission(req, res, next) {
     try {
