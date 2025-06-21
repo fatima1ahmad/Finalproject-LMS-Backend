@@ -142,3 +142,14 @@ secure_url TEXT NOT NULL,
 format VARCHAR(50),
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );ALTER TABLE attachments ADD COLUMN mime_type VARCHAR(100) NOT NULL;
+
+ALTER TABLE attachments
+ADD COLUMN lesson_id INTEGER REFERENCES lessons(id) ON DELETE SET NULL,
+ADD COLUMN submission_id INTEGER REFERENCES submissions(id) ON DELETE SET NULL;
+ 
+-- إنشاء indexes لتحسين الأداء
+CREATE INDEX idx_attachments_lesson ON attachments(lesson_id);
+CREATE INDEX idx_attachments_submission ON attachments(submission_id);
+ 
+ALTER TABLE submissions
+ADD COLUMN attachment_id INTEGER REFERENCES attachments(id) ON DELETE SET NULL;
