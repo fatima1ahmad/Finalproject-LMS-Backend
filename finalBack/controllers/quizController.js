@@ -182,15 +182,15 @@ export default {
       }
     },
   ],
-
   getQuizSubmissions: [
     authenticateJWT,
     authorize(["instructor", "admin"]),
     async (req, res) => {
       try {
         const { id } = req.params;
-        const submissions = await Quiz.getQuizSubmissions(id);
-        const maxScore = await Quiz.getQuizMaxScore(id);
+
+        const submissions = (await Quiz.getQuizSubmissions(id)) || [];
+        const maxScore = (await Quiz.getQuizMaxScore(id)) ?? 0;
 
         return res.json(
           createResponse(true, "Submissions retrieved successfully", {
@@ -199,10 +199,32 @@ export default {
           })
         );
       } catch (error) {
+        console.error("❌ getQuizSubmissions error:", error);
         return res.status(500).json(createResponse(false, error.message));
       }
     },
   ],
+
+  // getQuizSubmissions: [
+  //   authenticateJWT,
+  //   authorize(["instructor", "admin"]),
+  //   async (req, res) => {
+  //     try {
+  //       const { id } = req.params;
+  //       const submissions = await Quiz.getQuizSubmissions(id);
+  //       const maxScore = await Quiz.getQuizMaxScore(id);
+
+  //       return res.json(
+  //         createResponse(true, "Submissions retrieved successfully", {
+  //           submissions,
+  //           max_score: maxScore,
+  //         })
+  //       );
+  //     } catch (error) {
+  //       return res.status(500).json(createResponse(false, error.message));
+  //     }
+  //   },
+  // ],
 
   getQuizSubmission: [
     authenticateJWT,

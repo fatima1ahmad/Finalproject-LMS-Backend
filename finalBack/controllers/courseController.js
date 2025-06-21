@@ -22,30 +22,6 @@ const CourseController = {
     }
   },
 
-  // async getAllCourses(req, res, next) {
-  //   try {
-  //     let courses;
-
-  //     if (!req.user) {
-  //       // Public users (not logged in) only see approved coursess
-  //       courses = await CourseModel.findByStatus("approved");
-  //     } else if (req.user.role === "student") {
-  //       // Students see only approved courses
-  //       courses = await CourseModel.findByStatus("approved");
-  //     } else if (req.user.role === "admin" || req.user.role === "instructor") {
-  //       // Admins and instructors see all courses
-  //       courses = await CourseModel.findAll();
-  //     } else {
-  //       return res
-  //         .status(403)
-  //         .json({ success: false, message: "Unauthorized" });
-  //     }
-
-  //     res.json({ success: true, data: courses });
-  //   } catch (error) {
-  //     next(error);
-  //   }
-  // },
   async getAllCourses(req, res, next) {
     try {
       let courses;

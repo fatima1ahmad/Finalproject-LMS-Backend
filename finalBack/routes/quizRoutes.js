@@ -1,9 +1,17 @@
 import express from "express";
 import quizController from "../controllers/quizController.js";
 import { authenticateJWT, authorize } from "../middlewares/authMiddleware.js";
+import questionController from "../controllers/questionController.js"; // مهم
 
 const router = express.Router();
 
+// توجيه إضافة سؤال إلى الكويز
+router.post(
+  "/:quiz_id/questions",
+  authenticateJWT,
+  authorize(["instructor", "admin"]),
+  questionController.createQuestion
+);
 // Quiz CRUD operations
 router.post(
   "/",
